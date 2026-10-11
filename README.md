@@ -21,8 +21,9 @@ Website form ─▶ CRM (Vercel) ─▶ crm_wa_messages (Supabase) ◀─ gatewa
 
 ## Deploy (one time, about 5 minutes)
 
-1. Make a free account at **render.com** (sign in with GitHub, account `ironmark72`). No card is needed for the free plan.
-2. Render: **New, then Blueprint**. Pick the repo **ironmark72/wa-gateway** and click Apply.
+1. Make a free account at **render.com**. No card is needed for the free plan.
+2. Render: **New, then Blueprint**. Under "Public Git repository" paste `https://github.com/ironmark72/mx-wa-gateway` and click
+   Connect, then Apply. (Signing in with GitHub and picking the repo works too.)
 3. When it asks for **DATABASE_URL**, paste the single line from `D:\WA\gateway\RENDER-DATABASE-URL.txt`.
    That file is on this PC only and never goes to GitHub.
 4. Wait for "Live" (about 3 minutes). Then in the CRM open **WhatsApp, then Connection**. It should say "Not linked",
