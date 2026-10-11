@@ -1,0 +1,18 @@
+# Render Blueprint: the free WhatsApp gateway (D:\WA\gateway). Free plan, no card needed.
+# Render asks for DATABASE_URL when you apply it: paste the line from gateway\RENDER-DATABASE-URL.txt
+services:
+  - type: web
+    name: mx-wa-gateway
+    runtime: node
+    plan: free
+    region: singapore
+    rootDir: gateway
+    buildCommand: npm install --omit=dev
+    startCommand: node index.js
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: NODE_VERSION
+        value: "22"
