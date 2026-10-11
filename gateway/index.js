@@ -414,6 +414,28 @@ async function commands() {
   }
 }
 
+/* ---------------- keep-awake ---------------- */
+
+/**
+ * Render's free plan sleeps after 15 minutes without visits. Supabase pg_cron pings /health every 10 minutes;
+ * Render tells each service its public address (RENDER_EXTERNAL_URL), so the gateway points that job at itself
+ * on every boot. The address is also saved in crm_settings ("wa_gateway") for reference.
+ */
+async function registerKeepalive() {
+  const url = (process.env.RENDER_EXTERNAL_URL || "").replace(/\/$/, "");
+  if (!/^https:\/\/[a-z0-9.-]+$/i.test(url)) return;
+  try {
+    await pool.query("select cron.schedule('wa-gateway-keepalive', '*/10 * * * *', $1)", [`select net.http_get('${url}/health')`]);
+    await pool.query(
+      "insert into crm_settings (key, value, updated_at) values ('wa_gateway', $1, now()) on conflict (key) do update set value = excluded.value, updated_at = now()",
+      [JSON.stringify({ url })],
+    );
+    log("[keepalive] pinging", url);
+  } catch (e) {
+    log("[keepalive] could not register:", e.message);
+  }
+}
+
 /* ---------------- boot ---------------- */
 
 let lockClient = null;
@@ -451,6 +473,7 @@ server.listen(Number(process.env.PORT) || 3000, () => log("[http] listening on",
   log("[lock] acquired; this copy is active");
   setInterval(() => pool.query("update crm_wa_state set heartbeat_at = now() where id = 1").catch(() => {}), 30_000);
   await pool.query("update crm_wa_state set heartbeat_at = now() where id = 1");
+  await registerKeepalive();
   start().catch((e) => log("[start]", e.message));
   commands();
   work();
